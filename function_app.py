@@ -26,10 +26,10 @@ if not _is_running_in_docker() and _is_running_on_azure():
     Voikko.setLibrarySearchPath('voikko')
 
     # Setup libvoikko.so.1 to load dictionary files from /home/site/wwwroot/voikko
-    # TODO: text on Azure
+    # This is needed because spacy_fi_experimental_web_md does not use Voikko's LibrarySearchPath
     os.environ['VOIKKO_DICTIONARY_PATH'] = '/home/site/wwwroot/voikko'
 
-# running on Windows
+# running on Windows devlopment environemnt
 if _is_running_on_windows() and not _is_running_in_docker():
     # Setup libvoikko to load native libvoikko-1.dll from voikko directory
     Voikko.setLibrarySearchPath('voikko')

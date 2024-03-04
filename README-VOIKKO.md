@@ -1,34 +1,38 @@
-# How to add native dependencies conditionally
+# How to run spacy-fi / Voikko on Azure Function apps
 
-Python libvoikko module haas depdendcy to native libvoikko.so file, so files dependencies and dictionary files
+Native library libvoikko1 and dictionaries will cause issues on some environments.
 
 ## Containerized version
 
 Dockerfile installs `libvoikko1` `voikko-fi` debian packages. No other dependency downloads are needed for containerized version.
 
-.dockerignore has entry for `voikko`. It is used to ignore all files needed for code-based deployments.
+`.dockerignore` file has entry for `voikko` directory. It is used to ignore all files needed for code-based deployments.
 
-The function app code itself will work without any modifications
+The function app code itself will work without any modifications or conditional code.
 
 ## Non-containerized version
 
-To make running function app as code-based function app on a service on Windows development machines
-project has voikko/download-libraries.sh file. It will do following:
+Code-based Azure Function app does not allow installation of .deb files and therefore
+native libraries and dictionary must be part of the function app source code.
 
-* Download and extract .so files from debian packages
-* Download libvoikko-1.dll for Windows development
+### Script to download native libraries and dictionary
+
+`voikko/download-libraries.sh` file:
+
+* Download and extract `.so` files from debian packages
+* Download `libvoikko-1.dll` for Windows development
 * Download standard dictionary
 
-## Function app core tools version on Windows machine
+### Conditional code for Windows development
 
 Conditional code will do following extra steps:
 
 * Setup libvoikko Python module correctly to find libraries and dictionaries
 
-## Function app on code-based Azure function app service
+## Conditional code fpr code-based Azure function app service instance
 
 Contitional code on function app will setup voikko to be used with libvoikko Python module on :
 
 * load native dependencies of libvoikko1 with CDLL
 * Setup libvoikko Python module correctly to find libvoikko1
-* Do extra setup for spacy_fi_experimental_web_md to find standard finnish dictionary
+* Set `VOIKKO_DICTIONARY_PATH` environment variable to control libvoikko1: needed for spacy-fi that does not support `Voikko.setLibrarySearchPath()`
