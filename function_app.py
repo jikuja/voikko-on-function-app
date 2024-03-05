@@ -6,37 +6,39 @@ import azure.functions as func
 from libvoikko import Voikko
 import spacy
 
-def _is_running_in_docker():
-    return os.path.exists('/.dockerenv') or ('RUNNING_IN_DOCKER' in os.environ and os.environ['RUNNING_IN_DOCKER'] == 'true')
+def _requires_voikko_setup_linux():
+    return 'SETUP_VOIKKO_LINUX' in os.environ and os.environ['SETUP_VOIKKO_LINUX'] == 'true'
 
-def _is_running_on_azure():
-    return os.environ.get('WEBSITE_SITE_NAME') is not None and os.environ.get('WEBSITE_INSTANCE_ID') is not None
+def _requires_voikko_setup_windows():
+    return 'SETUP_VOIKKO_WINDOWS' in os.environ and os.environ['SETUP_VOIKKO_WINDOWS'] == 'true'
 
-def _is_running_on_windows():
-    return os.name == 'nt'
+# TODO: OS X support. Or just use homebrew
 
-# Running on code-based Azure function app instance
-if not _is_running_in_docker() and _is_running_on_azure():
+# Turn on linux-specific extra native code/ dictionary config
+if _requires_voikko_setup_linux():
+    DIRECTORY = 'voikko'
+
     # load native dependencies manually from voikko directory
     from ctypes import CDLL
-    CDLL('voikko/libarchive.so.13')
-    CDLL('voikko/libhfstospell.so.11')
+    CDLL(os.path.dirname(__file__) + os.sep + DIRECTORY + os.sep + 'libarchive.so.13')
+    CDLL(os.path.dirname(__file__) + os.sep + DIRECTORY + os.sep + 'libhfstospell.so.11')
 
     # Setup libvoikko to load native libvoikko.so.1 from voikko directory
-    Voikko.setLibrarySearchPath('voikko')
+    Voikko.setLibrarySearchPath(os.path.dirname(__file__) + os.sep + DIRECTORY)
 
-    # Setup libvoikko.so.1 to load dictionary files from /home/site/wwwroot/voikko
-    # This is needed because spacy_fi_experimental_web_md does not use Voikko's LibrarySearchPath
-    os.environ['VOIKKO_DICTIONARY_PATH'] = '/home/site/wwwroot/voikko'
+    # Setup libvoikko1.so.1 to load dictionary files from voikko
+    if not 'VOIKKO_DICTIONARY_PATH' in os.environ:
+        os.environ['VOIKKO_DICTIONARY_PATH'] = os.path.dirname(__file__) + os.sep + DIRECTORY
 
-# running on Windows devlopment environemnt
-if _is_running_on_windows() and not _is_running_in_docker():
+# Turn on windows-specific extra native code/ dictionary config
+if _requires_voikko_setup_windows():
+    DIRECTORY = 'voikko'
     # Setup libvoikko to load native libvoikko-1.dll from voikko directory
-    Voikko.setLibrarySearchPath('voikko')
+    Voikko.setLibrarySearchPath(os.path.dirname(__file__) + os.sep + DIRECTORY)
 
     # Setup libvoikko-1.dll load dictionary files from /home/site/wwwroot/voikko
-    # TODO: test
-    # os.environ['VOIKKO_DICTIONARY_PATH'] = os.path.dirname(__file__) + os.pathsep + 'voikko'
+    if not 'VOIKKO_DICTIONARY_PATH' in os.environ:
+        os.environ['VOIKKO_DICTIONARY_PATH'] = os.path.dirname(__file__) + os.sep + DIRECTORY
 
 app = func.FunctionApp()
 

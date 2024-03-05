@@ -51,3 +51,4 @@ __azurite_db*__.json
 .keys/
 voikko/
 !voikko/download-files.sh
+.venv/
