@@ -60,3 +60,9 @@ Might be a good option if native dependencies cannot be installed system-wide:
 * `docker run -e AzureWebJobsSecretStorageType=files -v ./.keys:/azure-functions-host/Secrets --name iddqd --rm -p 8080:80 -it -e AzureFunctionsJobHost__logging__logLevel__default=Trace -e CONTAINER_NAME=XYZ -e SETUP_VOIKKO_LINUX=true  azurefunctionsimagecode:v1.0.0`
 
 `-e SETUP_VOIKKO_LINUX=true` enables linux-specific setop. For other command-line arguments check [README-DOCKER.md](README-DOCKER.md).
+
+## Lessons learned
+
+Containerized Function Apps or Azure Container Apps are better then code-based fucntion apps if extra native dependencies are needed. Python / function app runtime hides too much information e.g. when loading incompatible .so files.
+
+Maintaining compatible set of .so files also requires extra work.
