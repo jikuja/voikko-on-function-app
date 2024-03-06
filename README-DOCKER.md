@@ -76,7 +76,17 @@ Secret key is being passed as `code` query parameter
 
 `echo 'Rongorongo on Pääsiäissaarella rapanuin kielessä käytetty tulkitsematon kirjoitusjärjestelmä. Rongorongon kirjoitusta on yritetty tulkita, mutta siinä ei ole onnistuttu. Sanan ”rongorongo” merkityksestä ei ole varmaa tietoa. Viimeiset rongorongon ymmärtäjät hävisivät 1800-luvulla. Näihin päiviin asti on säilynyt 26 puulaattaa, joissa on rongorongolla kirjoitettua tekstiä. Merkkejä on yhteensä noin 14 000.' | curl -s --data-binary @- -X POST http://localhost:8080/api/function\?code=idkfa | jq .`
 
-## ALternative approaches
+## Alternative approaches
 
 * Check if function app authentication can be disabled by using some other undocumented environment variable
   * Initial answer: No
+  * Core tolls has a flag to turn on function authentication
+ 
+## Trigger/input/output authentication
+
+It is possible to pass host machine Az CLI authentication into containers: https://github.com/gsoft-inc/azure-cli-credentials-proxy:
+
+They have two solutions documented:
+
+* Bind mount .azure into every running function app container => bigger container size, (requires own Dockerfile for local development)
+* Or use the proxy that implements IMDS's /token endpoints => requires docker compose or kubernetes.
